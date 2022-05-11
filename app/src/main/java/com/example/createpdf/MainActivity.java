@@ -42,7 +42,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -60,7 +63,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    ArrayList<Integer> answers;
+    int index = 0;
+
     private void createPdf() throws IOException {
+        answers = answersInList();
         String pdfPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
         File file = new File(pdfPath, "myPDF.pdf");
         OutputStream outputstream = new FileOutputStream(file);
@@ -69,21 +76,8 @@ public class MainActivity extends AppCompatActivity {
         PdfDocument pdfDocument = new PdfDocument(writer);
         Document document = new Document(pdfDocument);
 
-        /*Drawable tickDrawable = getDrawable(R.drawable.tick);
-        Bitmap tickBitmap = ((BitmapDrawable)tickDrawable).getBitmap();
-        ByteArrayOutputStream tickStream = new ByteArrayOutputStream();
-        tickBitmap.compress(Bitmap.CompressFormat.PNG, 100, tickStream);
-        byte[] tickBitmapData = tickStream.toByteArray();
-
-        ImageData tickImageData = ImageDataFactory.create(tickBitmapData);
-        Image tick = new Image(tickImageData);
-        tick.setHeight(8f);
-        tick.setWidth(8f);
-        tick.setHorizontalAlignment(HorizontalAlignment.CENTER);*/
-
-
         document.add(createHeader(1));
-        document.add(new Paragraph("\nElinstallation - Vertifikation af mindre elinstallation").setFontSize(18f));
+        document.add(new Paragraph("Elinstallation - Vertifikation af mindre elinstallation").setFontSize(18f).setPaddingTop(5f));
 
         float[] columnWidth1 = {150, 200, 200};
         Table personalInfo = new Table(columnWidth1);
@@ -107,65 +101,13 @@ public class MainActivity extends AppCompatActivity {
         questions.setFontSize(10f);
         questions.setPadding(0);
 
-        /*Table checkbox = new Table(1);
-        checkbox.addCell(new Cell().add(tick).setHorizontalAlignment(HorizontalAlignment.CENTER).setVerticalAlignment(VerticalAlignment.MIDDLE));*/
 
-        Table checkboxOff = new Table(1);
-        checkboxOff.setHeight(13f);
-        checkboxOff.setWidth(13f);
-        checkboxOff.addCell(new Cell());
-
-        ArrayList<String> questionsGenerelt = new ArrayList<>();
-        questionsGenerelt.add("Er der taget hensyn til ydre påvirkninger og anvendt korrekt kapslingsklasse?");
-        questionsGenerelt.add("Er der brandtætnet ved gennemføringer?");
-        questionsGenerelt.add("Er installationen isolationsprøvet?");
-        questionsGenerelt.add("Er der foretaget polaritetsprøve og kontrol af fasefølgen?");
-        questionsGenerelt.add("Er der foretaget funktionsprøver af installationen?");
-        questionsGenerelt.add("Er nul- og beskyttelsesledere korrekt identificeret?");
-        questionsGenerelt.add("Er ledere korrekt overstrømsbeskyttet og valgt efter strømværdi?");
-        questionsGenerelt.add("Er SPD’er (overspændingsbeskyttelsesudstyr) korrekt valgt og installeret?");
-        questionsGenerelt.add("Er permanent tilsluttede brugsgenstande egnet til den pågældende anvendelse?");
-        questionsGenerelt.add("Er nødvendig dokumentation til stede?");
-        questionsGenerelt.add("Er spændingsfald kontrolleret?");
-        questionsGenerelt.add("Er der foretaget foranstaltninger mod elektromagnetiske påvirkninger?");
-        questionsGenerelt.add("Er ejer/bruger informeret om funktion og betjening?");
-
-        ArrayList<String> questionsTavlen = new ArrayList<>();
-        questionsTavlen.add("Er der tilstrækkelig plads til at arbejde på/adgang til tavlen?");
-        questionsTavlen.add("Er overstrømsbeskyttelsesudstyr korrekt valgt og evt. indstillet?");
-        questionsTavlen.add("Er der en entydig mærkning af beskyttelsesudstyr med tilhørsforhold?");
-        questionsTavlen.add("Er der mærkning om max. mærke-/indstillingsstrøm?");
-        questionsTavlen.add("Er mærkning med oplysninger om tekniske data for tavlen foretaget?");
-        questionsTavlen.add("Er udgående beskyttelsesledere anbragt i separate klemmer i tavlen?");
-        questionsTavlen.add("Er afdækning og dækplader monteret?");
-        questionsTavlen.add("Er indføringer tilpasset/tætnet, så tavlens kapslingsklasse er som mærket?");
-
-        ArrayList<String> questionsInstallation = new ArrayList<>();
-        questionsInstallation.add("Er udstyr til adskillelse og afbrydelse korrekt valgt, placeret og installeret?");
-        questionsInstallation.add("Er stikkontakter og udtag m.m. installeret i henhold til gældende bestemmelser?");
-        questionsInstallation.add("Er kabler/ledninger korrekt oplagt, afsluttet og forbundet?");
-        questionsInstallation.add("Er kabler beskyttet mod mekanisk overlast ved opføringer fra gulv/jord?");
-        questionsInstallation.add("Er tilledninger aflastet for træk og vridning ved tilslutning til installationen?");
-        questionsInstallation.add("Er alle dæksler og afdækninger monteret, så der ikke er berøringsfare?");
-        questionsInstallation.add("Er alle samlinger let tilgængelige?");
-
-        ArrayList<String> questionsIndbygningsarmaturer = new ArrayList<>();
-        questionsIndbygningsarmaturer.add("Er indbygningsarmaturer korrekt valgt og monteret?");
-        questionsIndbygningsarmaturer.add("Er indbygningsarmaturer installeret således, at overophedning undgås?");
-
-        ArrayList<String> questionsBeskyttelsesledere = new ArrayList<>();
-        questionsBeskyttelsesledere.add("Er jordingslederen korrekt valgt (minimum 6 mm\u00B2)?");
-        questionsBeskyttelsesledere.add("Er der etableret beskyttende potentialudligning?");
-        questionsBeskyttelsesledere.add("Er supplerende beskyttende potentialudligning etableret?");
-        questionsBeskyttelsesledere.add("Er den gennemgående forbindelse i udligningsforbindelser kontrolleret?");
-        questionsBeskyttelsesledere.add("Er den gennemgående forbindelse i beskyttelsesledere kontrolleret?");
-        questionsBeskyttelsesledere.add("Er overgangsmodstand for jordelektroden kontrolleret?");
-
-        ArrayList<String> questionsFejlbeskyttelse = new ArrayList<>();
-        questionsFejlbeskyttelse.add("Er beskyttelsesmetode korrekt valgt i forhold til installationstype og systemjording?");
-        questionsFejlbeskyttelse.add("Er RCD’er (fejlstrømsafbrydere) kontrolleret og afprøvet?");
-        questionsFejlbeskyttelse.add("Er klasse I brugsgenstande tilsluttet til beskyttelseslederen?");
-
+        ArrayList<String> questionsGenerelt = questionGroup1();
+        ArrayList<String> questionsTavlen = questionGroup2();
+        ArrayList<String> questionsInstallation = questionGroup3();
+        ArrayList<String> questionsIndbygningsarmaturer = questionGroup4();
+        ArrayList<String> questionsBeskyttelsesledere = questionGroup5();
+        ArrayList<String> questionsFejlbeskyttelse = questionGroup6();
 
         questions.addCell(new Cell(2, 1).add(new Paragraph("")).setTextAlignment(TextAlignment.CENTER).setBorder(Border.NO_BORDER));
         questions.addCell(new Cell(2, 1).add(new Paragraph("Ja")).setTextAlignment(TextAlignment.CENTER).setBorder(Border.NO_BORDER));
@@ -175,17 +117,13 @@ public class MainActivity extends AppCompatActivity {
 
         for (int i = 0; i < questionsGenerelt.size(); i++) {
             questions.addCell(new Cell().add(new Paragraph(questionsGenerelt.get(i))).setBorder(Border.NO_BORDER));
-            questions.addCell(new Cell().add(createCheckboxOn()));
-            questions.addCell(new Cell().add(checkboxOff.setVerticalAlignment(VerticalAlignment.MIDDLE).setHorizontalAlignment(HorizontalAlignment.CENTER)).setBorder(Border.NO_BORDER));
-            questions.addCell(new Cell().add(checkboxOff.setVerticalAlignment(VerticalAlignment.MIDDLE).setHorizontalAlignment(HorizontalAlignment.CENTER)).setBorder(Border.NO_BORDER));
+            createCheckbox(answers.get(index), questions);
         }
 
         questions.addCell(new Cell(1, 4).add(new Paragraph("\n2. Tavlen:").setBold()).setBorder(Border.NO_BORDER));
         for (int i = 0; i < questionsTavlen.size(); i++) {
             questions.addCell(new Cell().add(new Paragraph(questionsTavlen.get(i))).setBorder(Border.NO_BORDER));
-            questions.addCell(new Cell().add(createCheckboxOn()));
-            questions.addCell(new Cell().add(checkboxOff.setVerticalAlignment(VerticalAlignment.MIDDLE).setHorizontalAlignment(HorizontalAlignment.CENTER)).setBorder(Border.NO_BORDER));
-            questions.addCell(new Cell().add(checkboxOff.setVerticalAlignment(VerticalAlignment.MIDDLE).setHorizontalAlignment(HorizontalAlignment.CENTER)).setBorder(Border.NO_BORDER));
+            createCheckbox(answers.get(index), questions);
         }
 
         document.add(questions);
@@ -200,33 +138,25 @@ public class MainActivity extends AppCompatActivity {
         questionsPage2.addCell(new Cell(1, 4).add(new Paragraph("\n3. Installation:").setBold()).setBorder(Border.NO_BORDER));
         for (int i = 0; i < questionsInstallation.size(); i++) {
             questionsPage2.addCell(new Cell().add(new Paragraph(questionsInstallation.get(i))).setBorder(Border.NO_BORDER));
-            questionsPage2.addCell(new Cell().add((createCheckboxOn()).setVerticalAlignment(VerticalAlignment.MIDDLE).setHorizontalAlignment(HorizontalAlignment.CENTER)).setBorder(Border.NO_BORDER));
-            questionsPage2.addCell(new Cell().add(checkboxOff.setVerticalAlignment(VerticalAlignment.MIDDLE).setHorizontalAlignment(HorizontalAlignment.CENTER)).setBorder(Border.NO_BORDER));
-            questionsPage2.addCell(new Cell().add(checkboxOff.setVerticalAlignment(VerticalAlignment.MIDDLE).setHorizontalAlignment(HorizontalAlignment.CENTER)).setBorder(Border.NO_BORDER));
+            createCheckbox(answers.get(index), questionsPage2);
         }
 
         questionsPage2.addCell(new Cell(1, 4).add(new Paragraph("\n4. Indbygningsarmaturer:").setBold()).setBorder(Border.NO_BORDER));
         for (int i = 0; i < questionsIndbygningsarmaturer.size(); i++) {
             questionsPage2.addCell(new Cell().add(new Paragraph(questionsIndbygningsarmaturer.get(i))).setBorder(Border.NO_BORDER));
-            questionsPage2.addCell(new Cell().add((createCheckboxOn()).setVerticalAlignment(VerticalAlignment.MIDDLE).setHorizontalAlignment(HorizontalAlignment.CENTER)).setBorder(Border.NO_BORDER));
-            questionsPage2.addCell(new Cell().add(checkboxOff.setVerticalAlignment(VerticalAlignment.MIDDLE).setHorizontalAlignment(HorizontalAlignment.CENTER)).setBorder(Border.NO_BORDER));
-            questionsPage2.addCell(new Cell().add(checkboxOff.setVerticalAlignment(VerticalAlignment.MIDDLE).setHorizontalAlignment(HorizontalAlignment.CENTER)).setBorder(Border.NO_BORDER));
+            createCheckbox(answers.get(index), questionsPage2);
         }
 
         questionsPage2.addCell(new Cell(1, 4).add(new Paragraph("\n5. Beskyttelsesledere og udligningsforbindelser:").setBold()).setBorder(Border.NO_BORDER));
         for (int i = 0; i < questionsBeskyttelsesledere.size(); i++) {
             questionsPage2.addCell(new Cell().add(new Paragraph(questionsBeskyttelsesledere.get(i))).setBorder(Border.NO_BORDER));
-            questionsPage2.addCell(new Cell().add((createCheckboxOn()).setVerticalAlignment(VerticalAlignment.MIDDLE).setHorizontalAlignment(HorizontalAlignment.CENTER)).setBorder(Border.NO_BORDER));
-            questionsPage2.addCell(new Cell().add(checkboxOff.setVerticalAlignment(VerticalAlignment.MIDDLE).setHorizontalAlignment(HorizontalAlignment.CENTER)).setBorder(Border.NO_BORDER));
-            questionsPage2.addCell(new Cell().add(checkboxOff.setVerticalAlignment(VerticalAlignment.MIDDLE).setHorizontalAlignment(HorizontalAlignment.CENTER)).setBorder(Border.NO_BORDER));
+            createCheckbox(answers.get(index), questionsPage2);
         }
 
         questionsPage2.addCell(new Cell(1, 4).add(new Paragraph("\n6. Fejlbeskyttelse/supplerende beskyttelse:\n").setBold()).setBorder(Border.NO_BORDER));
         for (int i = 0; i < questionsFejlbeskyttelse.size(); i++) {
             questionsPage2.addCell(new Cell().add(new Paragraph(questionsFejlbeskyttelse.get(i))).setBorder(Border.NO_BORDER));
-            questionsPage2.addCell(new Cell().add((createCheckboxOn()).setVerticalAlignment(VerticalAlignment.MIDDLE).setHorizontalAlignment(HorizontalAlignment.CENTER)).setBorder(Border.NO_BORDER));
-            questionsPage2.addCell(new Cell().add(checkboxOff.setVerticalAlignment(VerticalAlignment.MIDDLE).setHorizontalAlignment(HorizontalAlignment.CENTER)).setBorder(Border.NO_BORDER));
-            questionsPage2.addCell(new Cell().add(checkboxOff.setVerticalAlignment(VerticalAlignment.MIDDLE).setHorizontalAlignment(HorizontalAlignment.CENTER)).setBorder(Border.NO_BORDER));
+            createCheckbox(answers.get(index), questionsPage2);
         }
 
         document.add(questionsPage2);
@@ -275,7 +205,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public Cell createCheckboxOff() {
-        return new Cell();
+        Table checkboxOff = new Table(1);
+        checkboxOff.setHeight(13f);
+        checkboxOff.setWidth(13f);
+        checkboxOff.addCell(new Cell());
+
+        return new Cell().add(checkboxOff.setVerticalAlignment(VerticalAlignment.MIDDLE).setHorizontalAlignment(HorizontalAlignment.CENTER)).setBorder(Border.NO_BORDER);
     }
 
     public Image createTick() {
@@ -293,6 +228,116 @@ public class MainActivity extends AppCompatActivity {
 
         return tick;
     }
+
+    public void createCheckbox(int answer, Table table) {
+        if (answer == 1) {
+            table.addCell(new Cell().add(createCheckboxOn()).setBorder(Border.NO_BORDER));
+            table.addCell(new Cell().add(createCheckboxOff()).setBorder(Border.NO_BORDER));
+            table.addCell(new Cell().add(createCheckboxOff()).setBorder(Border.NO_BORDER));
+        } else if (answer == 2) {
+            table.addCell(new Cell().add(createCheckboxOff()).setBorder(Border.NO_BORDER));
+            table.addCell(new Cell().add(createCheckboxOn()).setBorder(Border.NO_BORDER));
+            table.addCell(new Cell().add(createCheckboxOff()).setBorder(Border.NO_BORDER));
+        } else {
+            table.addCell(new Cell().add(createCheckboxOff()).setBorder(Border.NO_BORDER));
+            table.addCell(new Cell().add(createCheckboxOff()).setBorder(Border.NO_BORDER));
+            table.addCell(new Cell().add(createCheckboxOn()).setBorder(Border.NO_BORDER));
+        }
+        index++;
+    }
+
+    public ArrayList<String> questionGroup1() {
+        ArrayList<String> questionsGenerelt = new ArrayList<>();
+        questionsGenerelt.add("Er der taget hensyn til ydre påvirkninger og anvendt korrekt kapslingsklasse?");
+        questionsGenerelt.add("Er der brandtætnet ved gennemføringer?");
+        questionsGenerelt.add("Er installationen isolationsprøvet?");
+        questionsGenerelt.add("Er der foretaget polaritetsprøve og kontrol af fasefølgen?");
+        questionsGenerelt.add("Er der foretaget funktionsprøver af installationen?");
+        questionsGenerelt.add("Er nul- og beskyttelsesledere korrekt identificeret?");
+        questionsGenerelt.add("Er ledere korrekt overstrømsbeskyttet og valgt efter strømværdi?");
+        questionsGenerelt.add("Er SPD’er (overspændingsbeskyttelsesudstyr) korrekt valgt og installeret?");
+        questionsGenerelt.add("Er permanent tilsluttede brugsgenstande egnet til den pågældende anvendelse?");
+        questionsGenerelt.add("Er nødvendig dokumentation til stede?");
+        questionsGenerelt.add("Er spændingsfald kontrolleret?");
+        questionsGenerelt.add("Er der foretaget foranstaltninger mod elektromagnetiske påvirkninger?");
+        questionsGenerelt.add("Er ejer/bruger informeret om funktion og betjening?");
+
+        return questionsGenerelt;
+    }
+
+    public ArrayList<String> questionGroup2() {
+        ArrayList<String> questionsTavlen = new ArrayList<>();
+        questionsTavlen.add("Er der tilstrækkelig plads til at arbejde på/adgang til tavlen?");
+        questionsTavlen.add("Er overstrømsbeskyttelsesudstyr korrekt valgt og evt. indstillet?");
+        questionsTavlen.add("Er der en entydig mærkning af beskyttelsesudstyr med tilhørsforhold?");
+        questionsTavlen.add("Er der mærkning om max. mærke-/indstillingsstrøm?");
+        questionsTavlen.add("Er mærkning med oplysninger om tekniske data for tavlen foretaget?");
+        questionsTavlen.add("Er udgående beskyttelsesledere anbragt i separate klemmer i tavlen?");
+        questionsTavlen.add("Er afdækning og dækplader monteret?");
+        questionsTavlen.add("Er indføringer tilpasset/tætnet, så tavlens kapslingsklasse er som mærket?");
+
+        return questionsTavlen;
+    }
+
+    public ArrayList<String> questionGroup3() {
+        ArrayList<String> questionsInstallation = new ArrayList<>();
+        questionsInstallation.add("Er udstyr til adskillelse og afbrydelse korrekt valgt, placeret og installeret?");
+        questionsInstallation.add("Er stikkontakter og udtag m.m. installeret i henhold til gældende bestemmelser?");
+        questionsInstallation.add("Er kabler/ledninger korrekt oplagt, afsluttet og forbundet?");
+        questionsInstallation.add("Er kabler beskyttet mod mekanisk overlast ved opføringer fra gulv/jord?");
+        questionsInstallation.add("Er tilledninger aflastet for træk og vridning ved tilslutning til installationen?");
+        questionsInstallation.add("Er alle dæksler og afdækninger monteret, så der ikke er berøringsfare?");
+        questionsInstallation.add("Er alle samlinger let tilgængelige?");
+
+        return questionsInstallation;
+    }
+
+    public ArrayList<String> questionGroup4() {
+        ArrayList<String> questionsIndbygningsarmaturer = new ArrayList<>();
+        questionsIndbygningsarmaturer.add("Er indbygningsarmaturer korrekt valgt og monteret?");
+        questionsIndbygningsarmaturer.add("Er indbygningsarmaturer installeret således, at overophedning undgås?");
+
+        return questionsIndbygningsarmaturer;
+    }
+
+    public ArrayList<String> questionGroup5() {
+        ArrayList<String> questionsBeskyttelsesledere = new ArrayList<>();
+        questionsBeskyttelsesledere.add("Er jordingslederen korrekt valgt (minimum 6 mm\u00B2)?");
+        questionsBeskyttelsesledere.add("Er der etableret beskyttende potentialudligning?");
+        questionsBeskyttelsesledere.add("Er supplerende beskyttende potentialudligning etableret?");
+        questionsBeskyttelsesledere.add("Er den gennemgående forbindelse i udligningsforbindelser kontrolleret?");
+        questionsBeskyttelsesledere.add("Er den gennemgående forbindelse i beskyttelsesledere kontrolleret?");
+        questionsBeskyttelsesledere.add("Er overgangsmodstand for jordelektroden kontrolleret?");
+
+        return questionsBeskyttelsesledere;
+    }
+
+    public ArrayList<String> questionGroup6() {
+        ArrayList<String> questionsFejlbeskyttelse = new ArrayList<>();
+        questionsFejlbeskyttelse.add("Er beskyttelsesmetode korrekt valgt i forhold til installationstype og systemjording?");
+        questionsFejlbeskyttelse.add("Er RCD’er (fejlstrømsafbrydere) kontrolleret og afprøvet?");
+        questionsFejlbeskyttelse.add("Er klasse I brugsgenstande tilsluttet til beskyttelseslederen?");
+
+        return questionsFejlbeskyttelse;
+    }
+
+    public ArrayList<Integer> answersInList() {
+        ArrayList<Integer> answers = new ArrayList<>();
+        for (int i = 0; i < 39; i++) {
+            answers.add(randomNumber());
+            System.out.println(randomNumber());
+        }
+        return answers;
+    }
+
+    public int randomNumber() {
+        int max = 3;
+        int min = 1;
+        Random random = new Random();
+        return random.nextInt(max - min + 1) + min;
+    }
+
+
 
 
 }
