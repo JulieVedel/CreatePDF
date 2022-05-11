@@ -17,6 +17,7 @@ import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.colors.Color;
 import com.itextpdf.kernel.colors.ColorConstants;
+import com.itextpdf.kernel.events.IEventHandler;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.geom.Rectangle;
@@ -29,9 +30,12 @@ import com.itextpdf.layout.element.Cell;
 import com.itextpdf.layout.element.IBlockElement;
 import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Tab;
+import com.itextpdf.layout.element.TabStop;
 import com.itextpdf.layout.element.Table;
 import com.itextpdf.layout.element.Text;
 import com.itextpdf.layout.property.HorizontalAlignment;
+import com.itextpdf.layout.property.TabAlignment;
 import com.itextpdf.layout.property.TextAlignment;
 import com.itextpdf.layout.property.UnitValue;
 import com.itextpdf.layout.property.VerticalAlignment;
@@ -68,6 +72,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void createPdf() throws IOException {
         answers = answersInList();
+        Table personalInfo = createTablePersonalInfo();
+        Table questions = createTableQuestions();
+
         String pdfPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
         File file = new File(pdfPath, "myPDF.pdf");
         OutputStream outputstream = new FileOutputStream(file);
@@ -79,28 +86,7 @@ public class MainActivity extends AppCompatActivity {
         document.add(createHeader(1));
         document.add(new Paragraph("Elinstallation - Vertifikation af mindre elinstallation").setFontSize(18f).setPaddingTop(5f));
 
-        float[] columnWidth1 = {150, 200, 200};
-        Table personalInfo = new Table(columnWidth1);
-        personalInfo.setFontSize(10f);
-        personalInfo.setPadding(0);
-
-        personalInfo.addCell(new Cell(1, 3).add(new Paragraph("Kundenavn: ")));
-        personalInfo.addCell(new Cell(1, 3).add(new Paragraph("Adresse: ")));
-        personalInfo.addCell(new Cell().add(new Paragraph("Post nr: ")));
-        personalInfo.addCell(new Cell().add(new Paragraph("By: ")));
-        personalInfo.addCell(new Cell().add(new Paragraph("Ordernummer: ")));
-        personalInfo.addCell(new Cell(1, 3).add(new Paragraph("Identifikation af installationen: ")));
-        personalInfo.addCell(new Cell(1, 3).add(new Paragraph("Installationen er udført af: ")));
-        personalInfo.addCell(new Cell(1, 2).add(new Paragraph("Verifikation af installationen er udført af: ")));
-        personalInfo.addCell(new Cell().add(new Paragraph("Dato: ")));
-
         document.add(personalInfo);
-
-        float[] columnWidth2 = {450, 30, 30, 30};
-        Table questions = new Table(columnWidth2);
-        questions.setFontSize(10f);
-        questions.setPadding(0);
-
 
         ArrayList<String> questionsGenerelt = questionGroup1();
         ArrayList<String> questionsTavlen = questionGroup2();
@@ -131,9 +117,7 @@ public class MainActivity extends AppCompatActivity {
         document.add(new AreaBreak());
         document.add(createHeader(2));
 
-        Table questionsPage2 = new Table(columnWidth2);
-        questionsPage2.setFontSize(10f);
-        questionsPage2.setPadding(0);
+        Table questionsPage2 = createTableQuestions();
 
         questionsPage2.addCell(new Cell(1, 4).add(new Paragraph("\n3. Installation:").setBold()).setBorder(Border.NO_BORDER));
         for (int i = 0; i < questionsInstallation.size(); i++) {
@@ -163,6 +147,12 @@ public class MainActivity extends AppCompatActivity {
 
         document.add(new AreaBreak());
         document.add(createHeader(3));
+        document.add(new Paragraph("Måleresultater").setFontSize(18f).setPaddingTop(5f));
+
+        document.add(createTableKredsdetaljer(5));
+        document.add(createTableAfprovning(3));
+        document.add(createTableKortslutning(4));
+        document.add(createTableBemaerkninger());
 
         document.close();
         Toast.makeText(this, "Pdf Created", Toast.LENGTH_LONG).show();
@@ -337,7 +327,156 @@ public class MainActivity extends AppCompatActivity {
         return random.nextInt(max - min + 1) + min;
     }
 
+    private Table createTablePersonalInfo() {
+        float[] columnWidth1 = {150, 200, 200};
+        Table personalInfo = new Table(columnWidth1);
+        personalInfo.setFontSize(10f);
+        personalInfo.setPadding(0);
+
+        personalInfo.addCell(new Cell(1, 3).add(new Paragraph("Kundenavn: ")));
+        personalInfo.addCell(new Cell(1, 3).add(new Paragraph("Adresse: ")));
+        personalInfo.addCell(new Cell().add(new Paragraph("Post nr: ")));
+        personalInfo.addCell(new Cell().add(new Paragraph("By: ")));
+        personalInfo.addCell(new Cell().add(new Paragraph("Ordernummer: ")));
+        personalInfo.addCell(new Cell(1, 3).add(new Paragraph("Identifikation af installationen: ")));
+        personalInfo.addCell(new Cell(1, 3).add(new Paragraph("Installationen er udført af: ")));
+        personalInfo.addCell(new Cell(1, 2).add(new Paragraph("Verifikation af installationen er udført af: ")));
+        personalInfo.addCell(new Cell().add(new Paragraph("Dato: ")));
+
+        return personalInfo;
+    }
+
+    private Table createTableQuestions() {
+        float[] columnWidth2 = {450, 30, 30, 30};
+        Table questions = new Table(columnWidth2);
+        questions.setFontSize(10f);
+        questions.setPadding(0);
+
+        return questions;
+    }
+
+    public Table createTableKredsdetaljer(int rows) {
+        float[] columnWidth = {150, 150, 150, 150, 150, 75, 75, 150};
+        Table table = new Table(columnWidth);
+        table.setTextAlignment(TextAlignment.CENTER);
+        table.setFontSize(10f);
+        table.setPadding(0);
+
+        table.addCell(new Cell(1,8).add(new Paragraph("Kredsdetaljer").setTextAlignment(TextAlignment.LEFT)).setBackgroundColor(ColorConstants.GRAY));
+        table.addCell(new Cell().add(new Paragraph("Gruppe")));
+        table.addCell(new Cell().add(new Paragraph("OB (I\u2099)")));
+        table.addCell(new Cell().add(new Paragraph("Karakteristik")));
+        table.addCell(new Cell().add(new Paragraph("Tværsnit")));
+        table.addCell(new Cell().add(new Paragraph("Maks. OB")));
+        table.addCell(new Cell().add(new Paragraph("Zs")));
+        table.addCell(new Cell().add(new Paragraph("RA")));
+        table.addCell(new Cell().add(new Paragraph("Isolation")));
+
+        if (rows > 0) {
+            for (int i = 0; i < rows; i++) {
+                table.addCell(new Cell().add(new Paragraph("Lala").setTextAlignment(TextAlignment.LEFT)));
+                table.addCell(new Cell().add(new Paragraph("12" + " A").setTextAlignment(TextAlignment.RIGHT)));
+                table.addCell(new Cell().add(new Paragraph("Boom boom").setTextAlignment(TextAlignment.LEFT)));
+                table.addCell(new Cell().add(new Paragraph("54" + " mm\u00B2").setTextAlignment(TextAlignment.RIGHT)));
+                table.addCell(new Cell().add(new Paragraph("6" + " A").setTextAlignment(TextAlignment.RIGHT)));
+                table.addCell(new Cell(1, 2).add(new Paragraph("9" + " Ohm").setTextAlignment(TextAlignment.RIGHT)));
+                table.addCell(new Cell().add(new Paragraph("25" + " Ohm").setTextAlignment(TextAlignment.RIGHT)));
+            }
+        }
+
+        table.addCell(new Cell(1, 8).setBorder(Border.NO_BORDER).setHeight(10f));
+        table.addCell(new Cell(1, 5).add(new Paragraph("Overgangsmodstand for jordingsleder og jordelektrode R:").setTextAlignment(TextAlignment.LEFT)).setBorderRight(Border.NO_BORDER));
+        table.addCell(new Cell(1, 3).add(new Paragraph("8954" + " Ohm").setTextAlignment(TextAlignment.RIGHT)).setBorderLeft(Border.NO_BORDER));
+        table.addCell(new Cell(1, 8).setBorder(Border.NO_BORDER).setHeight(10f));
 
 
+        return table;
+    }
+
+    public Table createTableAfprovning(int rows) {
+        float[] columnWidth = {150, 150, 150, 150, 150, 150, 150, 150};
+        Table table = new Table(columnWidth);
+        table.setTextAlignment(TextAlignment.CENTER);
+        table.setFontSize(10f);
+        table.setPadding(0);
+
+        table.addCell(new Cell(1,8).add(new Paragraph("Afprøvning af RCD’er").setTextAlignment(TextAlignment.LEFT)).setBackgroundColor(ColorConstants.GRAY));
+        table.addCell(new Cell(2, 1).add(new Paragraph("")));
+        table.addCell(new Cell(2, 4).add(new Paragraph("Sinus (Type A og AC)")));
+        table.addCell(new Cell(2, 2).add(new Paragraph("Pulserende overlejret \npå 6 mA d.c. (Type-A)")));
+        table.addCell(new Cell(2, 1).add(new Paragraph("Prøve\u0002knap")));
+
+        //Trekant virker ikke
+        table.addCell(new Cell().add(new Paragraph("RCD")));
+        table.addCell(new Cell().add(new Paragraph("0º 1xI∆n")));
+        table.addCell(new Cell().add(new Paragraph("180º 1xI∆n")));
+        table.addCell(new Cell().add(new Paragraph("0º 5xI∆n")));
+        table.addCell(new Cell().add(new Paragraph("0º ½xI∆n")));
+        table.addCell(new Cell().add(new Paragraph("0º 1xI∆n")));
+        table.addCell(new Cell().add(new Paragraph("180º 1xI∆n")));
+        table.addCell(new Cell().add(new Paragraph("OK")));
+
+        if (rows > 0) {
+            for (int i = 0; i < rows; i++) {
+                table.addCell(new Cell().add(new Paragraph("Lala").setTextAlignment(TextAlignment.LEFT)));
+                table.addCell(new Cell().add(new Paragraph("12").setTextAlignment(TextAlignment.RIGHT)));
+                table.addCell(new Cell().add(new Paragraph("Boom boom").setTextAlignment(TextAlignment.LEFT)));
+                table.addCell(new Cell().add(new Paragraph("54").setTextAlignment(TextAlignment.RIGHT)));
+                table.addCell(new Cell().add(new Paragraph("6").setTextAlignment(TextAlignment.RIGHT)));
+                table.addCell(new Cell().add(new Paragraph("9").setTextAlignment(TextAlignment.RIGHT)));
+                table.addCell(new Cell().add(new Paragraph("25").setTextAlignment(TextAlignment.RIGHT)));
+                table.addCell(new Cell().add(new Paragraph("AV!").setTextAlignment(TextAlignment.LEFT)));
+            }
+        }
+        table.addCell(new Cell(1, 8).setBorder(Border.NO_BORDER).setHeight(10f));
+
+        return table;
+    }
+
+    public Table createTableKortslutning(int rows) {
+        float[] columnWidth = {150, 150, 150, 150, 150, 150, 150, 150};
+        Table table = new Table(columnWidth);
+        table.setTextAlignment(TextAlignment.CENTER);
+        table.setFontSize(10f);
+        table.setPadding(0);
+
+        table.addCell(new Cell(1,4).add(new Paragraph("Kortslutningsstrøm ").setTextAlignment(TextAlignment.LEFT)).setBackgroundColor(ColorConstants.GRAY));
+        table.addCell(new Cell(1,4).add(new Paragraph("Spændingsfald").setTextAlignment(TextAlignment.LEFT)).setBackgroundColor(ColorConstants.GRAY));
+
+        table.addCell(new Cell().add(new Paragraph("Gruppe")));
+        table.addCell(new Cell().add(new Paragraph("Ik")));
+        table.addCell(new Cell(1, 2).add(new Paragraph("Målt i punkt")));
+        table.addCell(new Cell().add(new Paragraph("Gruppe")));
+        table.addCell(new Cell().add(new Paragraph("ΔU")));
+        table.addCell(new Cell(1, 2).add(new Paragraph("Målt i punkt")));
+
+        if (rows > 0) {
+            for (int i = 0; i < rows; i++) {
+                table.addCell(new Cell().add(new Paragraph("Lala").setTextAlignment(TextAlignment.LEFT)));
+                table.addCell(new Cell().add(new Paragraph("12" + " kA").setTextAlignment(TextAlignment.RIGHT)));
+                table.addCell(new Cell(1, 2).add(new Paragraph("54").setTextAlignment(TextAlignment.RIGHT)));
+                table.addCell(new Cell().add(new Paragraph("Boooom").setTextAlignment(TextAlignment.LEFT)));
+                table.addCell(new Cell().add(new Paragraph("6" + " %").setTextAlignment(TextAlignment.RIGHT)));
+                table.addCell(new Cell(1, 2).add(new Paragraph("AV!").setTextAlignment(TextAlignment.LEFT)));
+            }
+        }
+        table.addCell(new Cell(1, 8).setBorder(Border.NO_BORDER).setHeight(10f));
+
+        return table;
+    }
+
+    public Table createTableBemaerkninger() {
+        float[] columnWidth = {1000};
+        Table table = new Table(columnWidth);
+
+        table.addCell(new Cell().add(new Paragraph("Bemærkning:")).setBackgroundColor(ColorConstants.GRAY));
+        table.addCell(new Cell().add(new Paragraph("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sodales ante ex, ac egestas libero pellentesque nec. " +
+                "Vestibulum mattis imperdiet facilisis. Pellentesque aliquam magna quis luctus tristique. " +
+                "Proin ac interdum leo. Curabitur eget ultrices sapien, pretium ullamcorper ligula. Ut quis risus luctus, " +
+                "porttitor urna nec, congue lectus. Quisque pellentesque felis eget massa pretium, in convallis mi consequat. " +
+                "Morbi vel mi rutrum, tristique risus nec, euismod tortor. ")));
+
+        return table;
+    }
 
 }
