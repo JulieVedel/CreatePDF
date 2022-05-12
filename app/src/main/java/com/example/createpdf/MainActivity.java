@@ -7,6 +7,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.itextpdf.forms.fields.PdfButtonFormField;
@@ -58,13 +60,20 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        try {
-            createPdf();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Button button = findViewById(R.id.idBtnGeneratePDF);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    createPdf();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
     }
 
     ArrayList<Integer> answers;
@@ -74,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
         answers = answersInList();
         Table personalInfo = createTablePersonalInfo();
         Table questions = createTableQuestions();
+        Table questionsPage2 = createTableQuestions();
 
         String pdfPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
         File file = new File(pdfPath, "myPDF.pdf");
@@ -117,7 +127,6 @@ public class MainActivity extends AppCompatActivity {
         document.add(new AreaBreak());
         document.add(createHeader(2));
 
-        Table questionsPage2 = createTableQuestions();
 
         questionsPage2.addCell(new Cell(1, 4).add(new Paragraph("\n3. Installation:").setBold()).setBorder(Border.NO_BORDER));
         for (int i = 0; i < questionsInstallation.size(); i++) {
@@ -150,8 +159,8 @@ public class MainActivity extends AppCompatActivity {
         document.add(new Paragraph("Måleresultater").setFontSize(18f).setPaddingTop(5f));
 
         document.add(createTableKredsdetaljer(5));
-        document.add(createTableAfprovning(3));
-        document.add(createTableKortslutning(4));
+        document.add(createTableAfprovning(5));
+        document.add(createTableKortslutning(5));
         document.add(createTableBemaerkninger());
 
         document.close();
@@ -228,10 +237,14 @@ public class MainActivity extends AppCompatActivity {
             table.addCell(new Cell().add(createCheckboxOff()).setBorder(Border.NO_BORDER));
             table.addCell(new Cell().add(createCheckboxOn()).setBorder(Border.NO_BORDER));
             table.addCell(new Cell().add(createCheckboxOff()).setBorder(Border.NO_BORDER));
-        } else {
+        } else if (answer == 3) {
             table.addCell(new Cell().add(createCheckboxOff()).setBorder(Border.NO_BORDER));
             table.addCell(new Cell().add(createCheckboxOff()).setBorder(Border.NO_BORDER));
             table.addCell(new Cell().add(createCheckboxOn()).setBorder(Border.NO_BORDER));
+        } else {
+            table.addCell(new Cell().add(createCheckboxOff()).setBorder(Border.NO_BORDER));
+            table.addCell(new Cell().add(createCheckboxOff()).setBorder(Border.NO_BORDER));
+            table.addCell(new Cell().add(createCheckboxOff()).setBorder(Border.NO_BORDER));
         }
         index++;
     }
@@ -468,13 +481,13 @@ public class MainActivity extends AppCompatActivity {
     public Table createTableBemaerkninger() {
         float[] columnWidth = {1000};
         Table table = new Table(columnWidth);
+        table.setPadding(0);
+
 
         table.addCell(new Cell().add(new Paragraph("Bemærkning:")).setBackgroundColor(ColorConstants.GRAY));
         table.addCell(new Cell().add(new Paragraph("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sodales ante ex, ac egestas libero pellentesque nec. " +
                 "Vestibulum mattis imperdiet facilisis. Pellentesque aliquam magna quis luctus tristique. " +
-                "Proin ac interdum leo. Curabitur eget ultrices sapien, pretium ullamcorper ligula. Ut quis risus luctus, " +
-                "porttitor urna nec, congue lectus. Quisque pellentesque felis eget massa pretium, in convallis mi consequat. " +
-                "Morbi vel mi rutrum, tristique risus nec, euismod tortor. ")));
+                "Proin ac interdum leo. Curabitur eget ultrices sapien, pretium ullamcorper ligula. Ut quis risus luctus, ").setMultipliedLeading(1.0f)));
 
         return table;
     }
